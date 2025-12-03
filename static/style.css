@@ -15,6 +15,27 @@
 * {
     box-sizing: border-box;
     transition: all 0.2s ease;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* Global Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 body {
@@ -50,7 +71,7 @@ body {
     border: 1px solid var(--border);
     border-radius: 24px;
     padding: 2rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
     position: relative;
     width: 100%;
     display: grid;
@@ -76,8 +97,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    overflow-y: auto; /* Allow scrolling if form is too tall */
-    max-height: 100%;
+    overflow-y: hidden; /* Remove scrollbar */
+    height: 100%;
 }
 
 .right-col {
@@ -126,13 +147,14 @@ label {
 
 input, textarea {
     width: 100%;
-    background: var(--input-bg);
+    background: rgba(15, 23, 42, 0.6);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
     color: var(--text-main);
     font-family: 'Outfit', monospace;
     font-size: 0.9rem;
+    backdrop-filter: blur(5px);
 }
 
 input:focus, textarea:focus {
@@ -151,7 +173,9 @@ textarea {
 }
 
 #message {
-    height: 120px;
+    height: auto;
+    flex: 1;
+    min-height: 100px;
 }
 
 .actions {
@@ -219,7 +243,7 @@ button {
 
 .status-header {
     padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.02);
     border-bottom: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
@@ -228,6 +252,53 @@ button {
     font-weight: 600;
     color: var(--text-muted);
     flex-shrink: 0;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.status-badge {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.btn-icon {
+    background: transparent;
+    color: var(--text-muted);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.05);
+    transform: translateY(-1px);
+}
+
+.btn-icon .icon {
+    width: 16px;
+    height: 16px;
 }
 
 .status-body {
@@ -239,23 +310,7 @@ button {
     scroll-behavior: smooth;
 }
 
-/* Custom Scrollbar for status body */
-.status-body::-webkit-scrollbar {
-    width: 8px;
-}
-
-.status-body::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
-}
-
-.status-body::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-}
-
-.status-body::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
+/* Custom Scrollbar removed as it is now global */
 
 .log-entry {
     padding: 0.5rem 0.75rem;
