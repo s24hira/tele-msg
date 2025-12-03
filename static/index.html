@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Sender</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #24A1DE; /* Telegram Blue */
+            --primary-hover: #1b8bbf;
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(36, 161, 222, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+            color: var(--text-color);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify_content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .glass-panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 550px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 2rem;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(36, 161, 222, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        button {
+            width: 100%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.875rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(36, 161, 222, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .status-area {
+            margin-top: 1.5rem;
+            border-radius: 8px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .status-header {
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-content {
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.875rem;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+        }
+
+        .log-item {
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .log-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .success { color: var(--success-color); }
+        .error { color: var(--error-color); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-panel">
+        <h1>Telegram Sender</h1>
+        
+        <div class="form-group">
+            <label for="botToken">Bot Token</label>
+            <input type="text" id="botToken" placeholder="e.g. 123456789:ABCdef..." autocomplete="off">
+        </div>
+
+        <div class="form-group">
+            <label for="userIds">User IDs (JSON Array)</label>
+            <textarea id="userIds" placeholder='e.g. [123456789, 987654321]' spellcheck="false"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" placeholder="Type your message here..." spellcheck="true"></textarea>
+        </div>
+
+        <button id="sendBtn" onclick="sendMessage()">
+            <span>Send Message</span>
+        </button>
+
+        <div id="statusArea" class="status-area">
+            <div class="status-header">
+                <span>Status Log</span>
+                <span id="statusSummary"></span>
+            </div>
+            <div id="statusContent" class="status-content"></div>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const botToken = document.getElementById('botToken').value.trim();
+            const userIdsStr = document.getElementById('userIds').value.trim();
+            const message = document.getElementById('message').value.trim();
+            const btn = document.getElementById('sendBtn');
+            const statusArea = document.getElementById('statusArea');
+            const statusContent = document.getElementById('statusContent');
+            const statusSummary = document.getElementById('statusSummary');
+
+            if (!botToken || !userIdsStr || !message) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            // Validate JSON
+            let userIds;
+            try {
+                userIds = JSON.parse(userIdsStr);
+                if (!Array.isArray(userIds)) throw new Error('Not an array');
+            } catch (e) {
+                alert('Invalid JSON format for User IDs. It must be an array like [123, 456].');
+                return;
+            }
+
+            // UI Loading State
+            btn.disabled = true;
+            btn.innerHTML = 'Sending...';
+            statusArea.style.display = 'block';
+            statusContent.innerHTML = '<div class="log-item">Starting...</div>';
+            statusSummary.textContent = '';
+
+            try {
+                const response = await fetch('/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bot_token: botToken,
+                        user_ids: userIdsStr, // Send as string to match backend expectation or parse there
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+
+                statusContent.innerHTML = ''; // Clear loading
+                
+                if (response.ok && data.results) {
+                    let successCount = 0;
+                    let failCount = 0;
+
+                    data.results.forEach(res => {
+                        const div = document.createElement('div');
+                        div.className = 'log-item';
+                        if (res.status === 'success') {
+                            div.innerHTML = `<span class="success">✓ User ${res.user_id}: Sent</span>`;
+                            successCount++;
+                        } else {
+                            div.innerHTML = `<span class="error">✗ User ${res.user_id}: Failed (${res.error || 'Unknown'})</span>`;
+                            failCount++;
+                        }
+                        statusContent.appendChild(div);
+                    });
+
+                    statusSummary.textContent = `${successCount} Sent, ${failCount} Failed`;
+                    statusSummary.className = failCount === 0 ? 'success' : 'error';
+
+                } else {
+                    statusContent.innerHTML = `<div class="log-item error">Error: ${data.error || 'Unknown server error'}</div>`;
+                }
+
+            } catch (error) {
+                statusContent.innerHTML = `<div class="log-item error">Network Error: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Send Message';
+            }
+        }
+    </script>
+</body>
+</html>
