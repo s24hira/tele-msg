@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response, stream_with_context
 import requests
 import json
 
@@ -26,24 +26,27 @@ def send_messages():
         except json.JSONDecodeError:
             return jsonify({'error': 'Invalid JSON format for User IDs'}), 400
 
-        results = []
-        for user_id in user_ids:
-            url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-            payload = {
-                'chat_id': user_id,
-                'text': message
-            }
-            try:
-                response = requests.post(url, json=payload)
-                response_data = response.json()
-                if response.ok:
-                    results.append({'user_id': user_id, 'status': 'success'})
-                else:
-                    results.append({'user_id': user_id, 'status': 'failed', 'error': response_data.get('description')})
-            except Exception as e:
-                results.append({'user_id': user_id, 'status': 'error', 'error': str(e)})
+        def generate():
+            for user_id in user_ids:
+                url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+                payload = {
+                    'chat_id': user_id,
+                    'text': message
+                }
+                result = {}
+                try:
+                    response = requests.post(url, json=payload)
+                    response_data = response.json()
+                    if response.ok:
+                        result = {'user_id': user_id, 'status': 'success'}
+                    else:
+                        result = {'user_id': user_id, 'status': 'failed', 'error': response_data.get('description')}
+                except Exception as e:
+                    result = {'user_id': user_id, 'status': 'error', 'error': str(e)}
+                
+                yield json.dumps(result) + '\n'
 
-        return jsonify({'results': results})
+        return Response(stream_with_context(generate()), mimetype='application/json')
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500

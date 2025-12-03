@@ -431,6 +431,9 @@
             statusBody.innerHTML = ''; // Clear previous logs
             statusSummary.textContent = 'Processing...';
 
+            let successCount = 0;
+            let failCount = 0;
+
             try {
                 const response = await fetch('/send', {
                     method: 'POST',
@@ -442,47 +445,69 @@
                     })
                 });
 
-                const data = await response.json();
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Server Error');
+                }
 
-                if (response.ok && data.results) {
-                    let successCount = 0;
-                    let failCount = 0;
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
 
-                    data.results.forEach(res => {
-                        const div = document.createElement('div');
-                        div.className = `log-entry ${res.status === 'success' ? 'success' : 'error'}`;
-                        
-                        const badge = document.createElement('span');
-                        badge.className = `badge ${res.status === 'success' ? 'success' : 'error'}`;
-                        badge.textContent = res.status === 'success' ? 'SENT' : 'FAIL';
-                        
-                        const text = document.createElement('span');
-                        text.textContent = `User ${res.user_id}`;
-                        if (res.error) text.textContent += ` — ${res.error}`;
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop(); // Keep the last partial line in buffer
 
-                        div.appendChild(badge);
-                        div.appendChild(text);
-                        statusBody.appendChild(div);
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
+                        try {
+                            const res = JSON.parse(line);
+                            
+                            const div = document.createElement('div');
+                            div.className = `log-entry ${res.status === 'success' ? 'success' : 'error'}`;
+                            
+                            const badge = document.createElement('span');
+                            badge.className = `badge ${res.status === 'success' ? 'success' : 'error'}`;
+                            badge.textContent = res.status === 'success' ? 'SENT' : 'FAIL';
+                            
+                            const text = document.createElement('span');
+                            text.textContent = `User ${res.user_id}`;
+                            if (res.error) text.textContent += ` — ${res.error}`;
 
-                        if (res.status === 'success') successCount++;
-                        else failCount++;
-                    });
+                            div.appendChild(badge);
+                            div.appendChild(text);
+                            statusBody.appendChild(div);
+                            
+                            // Auto scroll to bottom
+                            statusBody.scrollTop = statusBody.scrollHeight;
 
-                    statusSummary.innerHTML = `<span style="color:var(--success)">${successCount} Sent</span> &bull; <span style="color:var(--error)">${failCount} Failed</span>`;
+                            if (res.status === 'success') successCount++;
+                            else failCount++;
+                            
+                            statusSummary.innerHTML = `<span style="color:var(--success)">${successCount} Sent</span> &bull; <span style="color:var(--error)">${failCount} Failed</span>`;
 
-                } else {
-                    statusBody.innerHTML = `<div class="log-entry error">Server Error: ${data.error || 'Unknown'}</div>`;
-                    statusSummary.textContent = 'Error';
+                        } catch (e) {
+                            console.error('Error parsing JSON chunk', e);
+                        }
+                    }
                 }
 
             } catch (error) {
-                statusBody.innerHTML = `<div class="log-entry error">Network Error: ${error.message}</div>`;
-                statusSummary.textContent = 'Network Error';
+                statusBody.innerHTML += `<div class="log-entry error">Error: ${error.message}</div>`;
+                statusSummary.textContent = 'Error';
             } finally {
                 btn.disabled = false;
                 btnText.textContent = 'Send';
                 btnSpinner.style.display = 'none';
                 sendIcon.style.display = 'block';
+                
+                if (statusSummary.textContent === 'Processing...') {
+                     statusSummary.innerHTML = `<span style="color:var(--success)">${successCount} Sent</span> &bull; <span style="color:var(--error)">${failCount} Failed</span>`;
+                }
             }
         }
     </script>
