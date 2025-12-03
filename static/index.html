@@ -3,223 +3,409 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Sender</title>
+    <title>Telegram Sender Pro</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #24A1DE; /* Telegram Blue */
-            --primary-hover: #1b8bbf;
-            --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text-color: #f1f5f9;
+            --primary: #229ED9;
+            --primary-dark: #1b7fb0;
+            --accent: #00f2ea;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.6);
+            --input-bg: rgba(15, 23, 42, 0.8);
+            --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --success-color: #10b981;
-            --error-color: #ef4444;
+            --border: rgba(255, 255, 255, 0.08);
+            --success: #34d399;
+            --error: #f87171;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.2s ease;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
             background-image: 
-                radial-gradient(at 0% 0%, rgba(36, 161, 222, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
-            color: var(--text-color);
+                radial-gradient(circle at 10% 20%, rgba(34, 158, 217, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 242, 234, 0.1) 0%, transparent 40%);
+            color: var(--text-main);
             margin: 0;
-            min-height: 100vh;
+            height: 100vh; /* Fixed height to prevent scrolling if possible */
             display: flex;
-            justify_content: center;
+            justify-content: center; /* Fixed typo */
             align-items: center;
             padding: 1rem;
+            overflow: hidden; /* Prevent body scroll */
         }
 
-        .glass-panel {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 2.5rem;
+        .container {
             width: 100%;
-            max-width: 550px;
+            max-width: 900px; /* Wider container */
+            height: 100%;
+            max-height: 600px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Two columns */
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0.8;
+        }
+
+        .left-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .right-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            height: 100%;
+        }
+
+        header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 0.5rem;
         }
 
         h1 {
-            font-size: 1.875rem;
+            font-size: 1.75rem;
             font-weight: 700;
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 2rem;
-            background: linear-gradient(to right, #38bdf8, #818cf8);
+            margin: 0;
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.5rem;
         }
 
         label {
             display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
+            font-size: 0.75rem;
+            font-weight: 600;
             color: var(--text-muted);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         input, textarea {
             width: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
             padding: 0.75rem 1rem;
-            color: var(--text-color);
-            font-family: inherit;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            box-sizing: border-box;
+            color: var(--text-main);
+            font-family: 'Outfit', monospace;
+            font-size: 0.9rem;
         }
 
         input:focus, textarea:focus {
             outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(36, 161, 222, 0.2);
+            border-color: var(--primary);
+            background: rgba(15, 23, 42, 0.95);
+            box-shadow: 0 0 0 3px rgba(34, 158, 217, 0.15);
         }
 
         textarea {
-            resize: vertical;
-            min-height: 120px;
+            resize: none;
+        }
+
+        #userIds {
+            height: 80px;
+        }
+
+        #message {
+            height: 120px;
+        }
+
+        .actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
         }
 
         button {
-            width: 100%;
-            background: var(--primary-color);
-            color: white;
             border: none;
-            border-radius: 8px;
-            padding: 0.875rem;
-            font-size: 1rem;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex: 1;
         }
 
-        button:hover {
-            background: var(--primary-hover);
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(34, 158, 217, 0.3);
+        }
+
+        .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(36, 161, 222, 0.3);
+            box-shadow: 0 8px 12px -3px rgba(34, 158, 217, 0.4);
         }
 
-        button:active {
-            transform: translateY(0);
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            flex: 0 0 auto;
+            width: 48px;
+            padding: 0;
         }
 
-        button:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
         }
 
-        .status-area {
-            margin-top: 1.5rem;
-            border-radius: 8px;
+        /* Status Log - Now in right column */
+        .status-panel {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px solid var(--border);
             overflow: hidden;
-            display: none;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
         }
 
         .status-header {
             padding: 0.75rem 1rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
         }
 
-        .status-content {
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.1);
-            max-height: 200px;
+        .status-body {
+            padding: 0.75rem;
             overflow-y: auto;
-            font-size: 0.875rem;
-            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-family: 'Menlo', monospace;
+            font-size: 0.8rem;
+            flex-grow: 1;
         }
 
-        .log-item {
-            margin-bottom: 0.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        .log-entry {
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
         }
+
+        .log-entry.success { border-left: 2px solid var(--success); }
+        .log-entry.error { border-left: 2px solid var(--error); }
         
-        .log-item:last-child {
-            margin-bottom: 0;
-            padding-bottom: 0;
-            border-bottom: none;
+        .badge {
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
         }
+        .badge.success { background: rgba(52, 211, 153, 0.15); color: var(--success); }
+        .badge.error { background: rgba(248, 113, 113, 0.15); color: var(--error); }
 
-        .success { color: var(--success-color); }
-        .error { color: var(--error-color); }
+        .icon { width: 18px; height: 18px; fill: currentColor; }
+        
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.2);
+        /* Responsive */
+        @media (max-width: 768px) {
+            .glass-card {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 1.5rem;
+                max-height: 90vh;
+                overflow-y: auto;
+                display: block; /* Stack vertically on mobile */
+            }
+            body {
+                overflow: auto;
+                height: auto;
+                min-height: 100vh;
+            }
+            .status-panel {
+                margin-top: 1.5rem;
+                min-height: 150px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="glass-panel">
-        <h1>Telegram Sender</h1>
-        
-        <div class="form-group">
-            <label for="botToken">Bot Token</label>
-            <input type="text" id="botToken" placeholder="e.g. 123456789:ABCdef..." autocomplete="off">
-        </div>
+    <div class="container">
+        <div class="glass-card">
+            <header>
+                <h1>Telegram Sender</h1>
+                <div class="subtitle">Broadcast messages</div>
+            </header>
 
-        <div class="form-group">
-            <label for="userIds">User IDs (JSON Array)</label>
-            <textarea id="userIds" placeholder='e.g. [123456789, 987654321]' spellcheck="false"></textarea>
-        </div>
+            <div class="left-col">
+                <div class="form-group">
+                    <label for="botToken">Bot Token</label>
+                    <input type="text" id="botToken" placeholder="123456:ABC-def..." autocomplete="off">
+                </div>
 
-        <div class="form-group">
-            <label for="message">Message</label>
-            <textarea id="message" placeholder="Type your message here..." spellcheck="true"></textarea>
-        </div>
+                <div class="form-group">
+                    <label for="userIds">User IDs (JSON)</label>
+                    <textarea id="userIds" placeholder="[123456789, 987654321]" spellcheck="false"></textarea>
+                </div>
 
-        <button id="sendBtn" onclick="sendMessage()">
-            <span>Send Message</span>
-        </button>
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" placeholder="Type your message..." spellcheck="true"></textarea>
+                </div>
 
-        <div id="statusArea" class="status-area">
-            <div class="status-header">
-                <span>Status Log</span>
-                <span id="statusSummary"></span>
+                <div class="actions">
+                    <button class="btn-primary" id="sendBtn" onclick="sendMessage()">
+                        <div class="spinner" id="btnSpinner"></div>
+                        <span id="btnText">Send</span>
+                        <svg class="icon" viewBox="0 0 24 24" id="sendIcon">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                        </svg>
+                    </button>
+                    <button class="btn-secondary" onclick="clearLogs()" title="Clear Logs">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
-            <div id="statusContent" class="status-content"></div>
+
+            <div class="right-col">
+                <div class="status-panel" id="statusPanel">
+                    <div class="status-header">
+                        <span>Execution Log</span>
+                        <span id="statusSummary">Ready</span>
+                    </div>
+                    <div class="status-body" id="statusBody">
+                        <div style="color: var(--text-muted); text-align: center; margin-top: 2rem; font-style: italic;">
+                            Logs will appear here...
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
+        // Load saved data on startup
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedToken = localStorage.getItem('botToken');
+            const savedUserIds = localStorage.getItem('userIds');
+            const savedMessage = localStorage.getItem('message');
+
+            if (savedToken) document.getElementById('botToken').value = savedToken;
+            if (savedUserIds) {
+                document.getElementById('userIds').value = savedUserIds;
+                // Trigger blur to format if valid
+                document.getElementById('userIds').dispatchEvent(new Event('blur'));
+            }
+            if (savedMessage) document.getElementById('message').value = savedMessage;
+        });
+
+        // Save data on input changes
+        ['botToken', 'userIds', 'message'].forEach(id => {
+            document.getElementById(id).addEventListener('input', (e) => {
+                localStorage.setItem(id, e.target.value);
+            });
+        });
+
+        // Auto-format JSON on blur
+        document.getElementById('userIds').addEventListener('blur', function() {
+            const val = this.value.trim();
+            if (val) {
+                try {
+                    const parsed = JSON.parse(val);
+                    this.value = JSON.stringify(parsed, null, 2);
+                    this.style.borderColor = 'var(--success)';
+                    localStorage.setItem('userIds', this.value); // Save formatted version
+                } catch (e) {
+                    this.style.borderColor = 'var(--error)';
+                }
+            } else {
+                this.style.borderColor = 'var(--border)';
+            }
+        });
+
+        function clearLogs() {
+            const body = document.getElementById('statusBody');
+            const summary = document.getElementById('statusSummary');
+            body.innerHTML = '<div style="color: var(--text-muted); text-align: center; margin-top: 2rem; font-style: italic;">Logs cleared</div>';
+            summary.textContent = 'Ready';
+        }
+
         async function sendMessage() {
             const botToken = document.getElementById('botToken').value.trim();
             const userIdsStr = document.getElementById('userIds').value.trim();
             const message = document.getElementById('message').value.trim();
+            
             const btn = document.getElementById('sendBtn');
-            const statusArea = document.getElementById('statusArea');
-            const statusContent = document.getElementById('statusContent');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            const sendIcon = document.getElementById('sendIcon');
+            
+            const statusBody = document.getElementById('statusBody');
             const statusSummary = document.getElementById('statusSummary');
 
             if (!botToken || !userIdsStr || !message) {
@@ -227,22 +413,23 @@
                 return;
             }
 
-            // Validate JSON
             let userIds;
             try {
                 userIds = JSON.parse(userIdsStr);
                 if (!Array.isArray(userIds)) throw new Error('Not an array');
             } catch (e) {
-                alert('Invalid JSON format for User IDs. It must be an array like [123, 456].');
+                alert('Invalid JSON format for User IDs.');
                 return;
             }
 
-            // UI Loading State
+            // Loading State
             btn.disabled = true;
-            btn.innerHTML = 'Sending...';
-            statusArea.style.display = 'block';
-            statusContent.innerHTML = '<div class="log-item">Starting...</div>';
-            statusSummary.textContent = '';
+            btnText.textContent = 'Sending...';
+            btnSpinner.style.display = 'block';
+            sendIcon.style.display = 'none';
+            
+            statusBody.innerHTML = ''; // Clear previous logs
+            statusSummary.textContent = 'Processing...';
 
             try {
                 const response = await fetch('/send', {
@@ -250,44 +437,52 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         bot_token: botToken,
-                        user_ids: userIdsStr, // Send as string to match backend expectation or parse there
+                        user_ids: userIdsStr,
                         message: message
                     })
                 });
 
                 const data = await response.json();
 
-                statusContent.innerHTML = ''; // Clear loading
-                
                 if (response.ok && data.results) {
                     let successCount = 0;
                     let failCount = 0;
 
                     data.results.forEach(res => {
                         const div = document.createElement('div');
-                        div.className = 'log-item';
-                        if (res.status === 'success') {
-                            div.innerHTML = `<span class="success">✓ User ${res.user_id}: Sent</span>`;
-                            successCount++;
-                        } else {
-                            div.innerHTML = `<span class="error">✗ User ${res.user_id}: Failed (${res.error || 'Unknown'})</span>`;
-                            failCount++;
-                        }
-                        statusContent.appendChild(div);
+                        div.className = `log-entry ${res.status === 'success' ? 'success' : 'error'}`;
+                        
+                        const badge = document.createElement('span');
+                        badge.className = `badge ${res.status === 'success' ? 'success' : 'error'}`;
+                        badge.textContent = res.status === 'success' ? 'SENT' : 'FAIL';
+                        
+                        const text = document.createElement('span');
+                        text.textContent = `User ${res.user_id}`;
+                        if (res.error) text.textContent += ` — ${res.error}`;
+
+                        div.appendChild(badge);
+                        div.appendChild(text);
+                        statusBody.appendChild(div);
+
+                        if (res.status === 'success') successCount++;
+                        else failCount++;
                     });
 
-                    statusSummary.textContent = `${successCount} Sent, ${failCount} Failed`;
-                    statusSummary.className = failCount === 0 ? 'success' : 'error';
+                    statusSummary.innerHTML = `<span style="color:var(--success)">${successCount} Sent</span> &bull; <span style="color:var(--error)">${failCount} Failed</span>`;
 
                 } else {
-                    statusContent.innerHTML = `<div class="log-item error">Error: ${data.error || 'Unknown server error'}</div>`;
+                    statusBody.innerHTML = `<div class="log-entry error">Server Error: ${data.error || 'Unknown'}</div>`;
+                    statusSummary.textContent = 'Error';
                 }
 
             } catch (error) {
-                statusContent.innerHTML = `<div class="log-item error">Network Error: ${error.message}</div>`;
+                statusBody.innerHTML = `<div class="log-entry error">Network Error: ${error.message}</div>`;
+                statusSummary.textContent = 'Network Error';
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = 'Send Message';
+                btnText.textContent = 'Send';
+                btnSpinner.style.display = 'none';
+                sendIcon.style.display = 'block';
             }
         }
     </script>
