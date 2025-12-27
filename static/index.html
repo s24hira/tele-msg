@@ -3,81 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Sender Pro</title>
+    <title>TeleMsg Pro | Command Center</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="glass-card">
-            <header>
-                <h1>Telegram Sender</h1>
-                <div class="subtitle">Broadcast messages</div>
-            </header>
+    <div class="dashboard">
+        <!-- Stats Widgets -->
+        <div class="glass-panel stat-card stat1">
+            <span class="stat-label">Queue Capacity</span>
+            <div class="stat-value" id="stat-total">0</div>
+        </div>
+        <div class="glass-panel stat-card stat2">
+            <span class="stat-label">Successful Hits</span>
+            <div class="stat-value" id="stat-success">0</div>
+        </div>
+        <div class="glass-panel stat-card stat3">
+            <span class="stat-label">Delivery Errors</span>
+            <div class="stat-value" id="stat-failed">0</div>
+        </div>
 
-            <div class="main-inputs">
-                <div class="input-col left">
-                    <div class="form-group">
-                        <label for="botToken">Bot Token</label>
-                        <input type="text" id="botToken" placeholder="123456:ABC-def..." autocomplete="off">
-                    </div>
-
-                    <div class="form-group flex-grow">
-                        <label for="userIds">User IDs (JSON)</label>
-                        <textarea id="userIds" placeholder="[123456789, 987654321]" spellcheck="false"></textarea>
-                    </div>
-                </div>
-
-                <div class="input-col right">
-                    <div class="form-group flex-grow">
-                        <label for="message">Message</label>
-                        <textarea id="message" placeholder="Type your message..." spellcheck="true"></textarea>
-                    </div>
+        <!-- Composer Area -->
+        <div class="glass-panel composer">
+            <div class="composer-header">
+                <div class="title-group">
+                    <h1>Message Composer</h1>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Encrypted Telegram Broadcast</p>
                 </div>
             </div>
 
-            <div class="actions">
-                <button class="btn-secondary" id="resetBtn" onclick="resetFields()" title="Clear All Fields">
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-                    </svg>
-                    <span>Reset</span>
+            <div class="form-group">
+                <label for="botToken">Access Gateway (Bot Token)</label>
+                <input type="text" id="botToken" placeholder="7624248432:..." autocomplete="off">
+                
+                <label for="userIds">Target Uplinks (User IDs JSON)</label>
+                <textarea id="userIds" placeholder="[8023794433, 8804919711]"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Transmission Payload (Message)</label>
+                <textarea id="message" placeholder="Initialize your broadcast message here..."></textarea>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-secondary" onclick="resetFields()">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                    Reset
                 </button>
                 <button class="btn-primary" id="sendBtn" onclick="sendMessage()">
-                    <div class="spinner" id="btnSpinner"></div>
-                    <span id="btnText">Send Message</span>
-                    <svg class="icon" viewBox="0 0 24 24" id="sendIcon">
-                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-                    </svg>
+                    <span id="btnText">Execute Transmission</span>
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
                 </button>
             </div>
+        </div>
 
-            <div class="status-panel" id="statusPanel" style="display: none;">
-                <div class="status-header">
-                    <div class="header-left">
-                        <span>Execution Log</span>
-                        <span id="statusSummary" class="status-badge">Ready</span>
-                    </div>
-                    <div class="header-actions">
-                        <button class="btn-icon" id="copyBtn" onclick="copyLogs()" title="Copy Logs">
-                            <svg class="icon" viewBox="0 0 24 24">
-                                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-                            </svg>
-                        </button>
-                        <button class="btn-icon" onclick="clearLogs()" title="Clear Logs">
-                            <svg class="icon" viewBox="0 0 24 24">
-                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                            </svg>
-                        </button>
-                    </div>
+        <!-- Terminal Log -->
+        <div class="terminal">
+            <div class="terminal-header">
+                <div class="terminal-dots">
+                    <div class="dot red"></div>
+                    <div class="dot yellow"></div>
+                    <div class="dot green"></div>
                 </div>
-                <div class="status-body" id="statusBody">
-                    <div style="color: var(--text-muted); text-align: center; margin-top: 2rem; font-style: italic;">
-                        Logs will appear here...
-                    </div>
-                </div>
+                <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted);">REALTIME MONITOR</div>
+                <button class="btn-icon" onclick="copyLogs()" style="background:none; border:none; cursor:pointer; color:var(--text-muted);">
+                    <svg class="icon" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                </button>
+            </div>
+            <div class="terminal-body" id="statusBody">
+                <div class="terminal-entry" style="color: var(--text-muted);">[SYSTEM] Waiting for initialization...</div>
             </div>
         </div>
     </div>

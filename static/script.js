@@ -1,25 +1,37 @@
 // Load saved data on startup
 window.addEventListener('DOMContentLoaded', () => {
-    const savedToken = localStorage.getItem('botToken');
-    const savedUserIds = localStorage.getItem('userIds');
-    const savedMessage = localStorage.getItem('message');
-
-    if (savedToken) document.getElementById('botToken').value = savedToken;
-    if (savedUserIds) {
-        document.getElementById('userIds').value = savedUserIds;
-        // Trigger blur to format if valid
-        try {
-            const parsed = JSON.parse(savedUserIds);
-            document.getElementById('userIds').value = JSON.stringify(parsed, null, 2);
-        } catch (e) {}
-    }
-    if (savedMessage) document.getElementById('message').value = savedMessage;
+    const fields = ['botToken', 'userIds', 'message'];
+    fields.forEach(id => {
+        const val = localStorage.getItem(id);
+        if (val) {
+            const el = document.getElementById(id);
+            el.value = val;
+            if (id === 'userIds') {
+                try {
+                    const parsed = JSON.parse(val);
+                    el.value = JSON.stringify(parsed, null, 2);
+                    document.getElementById('stat-total').textContent = parsed.length;
+                    el.classList.add('success');
+                } catch (e) {}
+            }
+        }
+    });
 });
 
 // Save data on input changes
 ['botToken', 'userIds', 'message'].forEach(id => {
     document.getElementById(id).addEventListener('input', (e) => {
         localStorage.setItem(id, e.target.value);
+        if (id === 'userIds') {
+            try {
+                const parsed = JSON.parse(e.target.value);
+                document.getElementById('stat-total').textContent = parsed.length;
+                e.target.classList.remove('error');
+                e.target.classList.add('success');
+            } catch (err) {
+                e.target.classList.remove('success');
+            }
+        }
     });
 });
 
@@ -32,6 +44,7 @@ document.getElementById('userIds').addEventListener('blur', function() {
             this.value = JSON.stringify(parsed, null, 2);
             this.classList.remove('error');
             this.classList.add('success');
+            document.getElementById('stat-total').textContent = parsed.length;
             localStorage.setItem('userIds', this.value);
         } catch (e) {
             this.classList.remove('success');
@@ -39,45 +52,47 @@ document.getElementById('userIds').addEventListener('blur', function() {
         }
     } else {
         this.classList.remove('success', 'error');
+        document.getElementById('stat-total').textContent = '0';
     }
 });
 
 function clearLogs() {
-    const body = document.getElementById('statusBody');
-    const summary = document.getElementById('statusSummary');
-    body.innerHTML = '';
-    summary.textContent = 'Ready';
-    document.getElementById('statusPanel').style.display = 'none';
+    document.getElementById('statusBody').innerHTML = '<div class="terminal-entry" style="color: var(--text-muted);">[SYSTEM] Logs cleared... waiting for new sequence.</div>';
+    document.getElementById('stat-success').textContent = '0';
+    document.getElementById('stat-failed').textContent = '0';
 }
 
 function resetFields() {
-    if (confirm('Are you sure you want to clear all fields? This will also remove saved data.')) {
+    if (confirm('Are you sure you want to reset? This will clear all inputs and saved data.')) {
         ['botToken', 'userIds', 'message'].forEach(id => {
             const el = document.getElementById(id);
             el.value = '';
             el.classList.remove('success', 'error');
             localStorage.removeItem(id);
         });
+        document.getElementById('stat-total').textContent = '0';
         clearLogs();
     }
 }
 
-function copyLogs() {
+function addTerminalLog(type, message) {
     const body = document.getElementById('statusBody');
-    const logs = Array.from(body.querySelectorAll('.log-entry')).map(entry => {
-        return entry.textContent.replace('SENT', '[SENT] ').replace('FAIL', '[FAIL] ');
-    }).join('\n');
+    const time = new Date().toLocaleTimeString([], { hour12: false });
+    const div = document.createElement('div');
+    div.className = 'terminal-entry';
     
-    if (!logs) return;
+    const prefix = type === 'success' ? '<span class="t-success">[SUCCESS]</span>' : 
+                   type === 'error' ? '<span class="t-error">[ERROR]</span>' : 
+                   '<span style="color:var(--primary)">[SYSTEM]</span>';
+
+    div.innerHTML = `
+        <span class="t-time">${time}</span>
+        ${prefix}
+        <span>${message}</span>
+    `;
     
-    navigator.clipboard.writeText(logs).then(() => {
-        const btn = document.getElementById('copyBtn');
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<svg class="icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
-        setTimeout(() => {
-            btn.innerHTML = originalHtml;
-        }, 2000);
-    });
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
 }
 
 async function sendMessage() {
@@ -87,38 +102,34 @@ async function sendMessage() {
     
     const btn = document.getElementById('sendBtn');
     const btnText = document.getElementById('btnText');
-    const btnSpinner = document.getElementById('btnSpinner');
-    const sendIcon = document.getElementById('sendIcon');
-    
-    const statusBody = document.getElementById('statusBody');
-    const statusSummary = document.getElementById('statusSummary');
+    const statSuccess = document.getElementById('stat-success');
+    const statFailed = document.getElementById('stat-failed');
 
     if (!botToken || !userIdsStr || !message) {
-        alert('Please fill in all fields.');
+        alert('Transmission failed. Missing metadata.');
         return;
     }
 
     let userIds;
     try {
         userIds = JSON.parse(userIdsStr);
-        if (!Array.isArray(userIds)) throw new Error('Not an array');
+        if (!Array.isArray(userIds)) throw new Error();
     } catch (e) {
-        alert('Invalid JSON format for User IDs.');
+        alert('Cipher error. Target Uplinks must be in valid JSON array format.');
         return;
     }
 
-    // Loading State
+    // Initialize State
     btn.disabled = true;
-    btnText.textContent = 'Sending...';
-    btnSpinner.style.display = 'block';
-    sendIcon.style.display = 'none';
+    btn.classList.add('transmitting');
+    btnText.textContent = 'Transmitting...';
+    document.getElementById('statusBody').innerHTML = '';
+    addTerminalLog('system', `Broadcast sequence initiated for ${userIds.length} targets.`);
     
-    statusBody.innerHTML = ''; // Clear previous logs
-    statusSummary.textContent = 'Processing...';
-    document.getElementById('statusPanel').style.display = 'flex';
-
     let successCount = 0;
     let failCount = 0;
+    statSuccess.textContent = '0';
+    statFailed.textContent = '0';
 
     try {
         const response = await fetch('/send', {
@@ -131,10 +142,7 @@ async function sendMessage() {
             })
         });
 
-        if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.error || 'Server Error');
-        }
+        if (!response.ok) throw new Error('Gateway timeout or server error.');
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -146,66 +154,43 @@ async function sendMessage() {
             
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split('\n');
-            buffer = lines.pop(); // Keep the last partial line in buffer
-
-            const fragment = document.createDocumentFragment();
-            let hasNewLogs = false;
+            buffer = lines.pop();
 
             for (const line of lines) {
                 if (!line.trim()) continue;
                 try {
                     const res = JSON.parse(line);
-                    hasNewLogs = true;
-                    
-                    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-                    
-                    const div = document.createElement('div');
-                    div.className = `log-entry ${res.status === 'success' ? 'success' : 'error'}`;
-                    
-                    const timeSpan = document.createElement('span');
-                    timeSpan.className = 'log-time';
-                    timeSpan.textContent = time;
-
-                    const badge = document.createElement('span');
-                    badge.className = `badge ${res.status === 'success' ? 'success' : 'error'}`;
-                    badge.textContent = res.status === 'success' ? 'SENT' : 'FAIL';
-                    
-                    const text = document.createElement('span');
-                    text.className = 'log-text';
-                    text.textContent = `User ${res.user_id}`;
-                    if (res.error) text.textContent += ` — ${res.error}`;
-
-                    div.appendChild(timeSpan);
-                    div.appendChild(badge);
-                    div.appendChild(text);
-                    fragment.appendChild(div);
-
-                    if (res.status === 'success') successCount++;
-                    else failCount++;
-                    
-                } catch (e) {
-                    console.error('Error parsing JSON chunk', e);
-                }
-            }
-
-            if (hasNewLogs) {
-                statusBody.appendChild(fragment);
-                statusBody.scrollTop = statusBody.scrollHeight;
-                statusSummary.innerHTML = `<span style="color:var(--success)">${successCount} Sent</span> &bull; <span style="color:var(--error)">${failCount} Failed</span>`;
+                    if (res.status === 'success') {
+                        successCount++;
+                        statSuccess.textContent = successCount;
+                        addTerminalLog('success', `Transmission successful for Node ID: ${res.user_id}`);
+                    } else {
+                        failCount++;
+                        statFailed.textContent = failCount;
+                        addTerminalLog('error', `Node ID: ${res.user_id} - ${res.error || 'Connection dropped'}`);
+                    }
+                } catch (e) {}
             }
         }
 
     } catch (error) {
-        statusBody.innerHTML += `<div class="log-entry error">Error: ${error.message}</div>`;
-        statusSummary.textContent = 'Error';
+        addTerminalLog('error', `CRITICAL SYSTEM ERROR: ${error.message}`);
     } finally {
         btn.disabled = false;
-        btnText.textContent = 'Send';
-        btnSpinner.style.display = 'none';
-        sendIcon.style.display = 'block';
-        
-        if (statusSummary.textContent === 'Processing...') {
-             statusSummary.innerHTML = `<span style="color:var(--success)">${successCount} Sent</span> &bull; <span style="color:var(--error)">${failCount} Failed</span>`;
-        }
+        btn.classList.remove('transmitting');
+        btnText.textContent = 'Execute Transmission';
+        addTerminalLog('system', 'Sequence complete. Awaiting user input.');
     }
+}
+
+function copyLogs() {
+    const logs = Array.from(document.querySelectorAll('.terminal-entry'))
+        .map(el => el.textContent.trim())
+        .join('\n');
+    
+    if (!logs) return;
+    
+    navigator.clipboard.writeText(logs).then(() => {
+        alert('Terminal logs exported to clipboard.');
+    });
 }
