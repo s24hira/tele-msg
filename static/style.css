@@ -176,6 +176,41 @@ textarea { resize: none; flex: 1; min-height: 180px; }
     font-size: 0.85rem;
 }
 
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding-right: 3rem;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+    z-index: 10;
+}
+
+.toggle-password:hover {
+    color: var(--primary);
+}
+
+.toggle-password .icon {
+    width: 20px;
+    height: 20px;
+}
+
 /* Actions */
 .button-group {
     grid-column: 1 / -1;

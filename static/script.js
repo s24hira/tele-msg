@@ -194,3 +194,20 @@ function copyLogs() {
         alert('Terminal logs exported to clipboard.');
     });
 }
+
+// Password toggle logic
+document.getElementById('toggleBotToken').addEventListener('click', function() {
+    const botTokenInput = document.getElementById('botToken');
+    const eyeOpen = this.querySelector('.eye-open');
+    const eyeClosed = this.querySelector('.eye-closed');
+    
+    if (botTokenInput.type === 'password') {
+        botTokenInput.type = 'text';
+        eyeOpen.style.display = 'none';
+        eyeClosed.style.display = 'block';
+    } else {
+        botTokenInput.type = 'password';
+        eyeOpen.style.display = 'block';
+        eyeClosed.style.display = 'none';
+    }
+});
