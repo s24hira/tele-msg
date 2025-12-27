@@ -58,7 +58,7 @@ body {
     width: 100%;
     max-width: 900px;
     height: 100%;
-    max-height: 600px;
+    max-height: 850px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -70,16 +70,17 @@ body {
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--border);
     border-radius: 24px;
-    padding: 2rem;
+    padding: 2.5rem;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
     position: relative;
     width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    align-items: stretch;
-    height: 600px; /* Fixed height */
-    max-height: 90vh; /* Responsive max height */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-height: auto;
+    max-height: 95vh;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
 }
 
 .glass-card::before {
@@ -93,27 +94,32 @@ body {
     opacity: 0.8;
 }
 
-.left-col {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    overflow-y: hidden; /* Remove scrollbar */
-    height: 100%;
+.main-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
 }
 
-.right-col {
+.input-col {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    height: 100%;
-    min-height: 0;
-    overflow: hidden; /* Prevent column from expanding beyond parent */
+    gap: 1.5rem;
+}
+
+.form-group.flex-grow {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+}
+
+.form-group.flex-grow textarea {
+    flex: 1;
 }
 
 header {
-    grid-column: 1 / -1;
     text-align: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 h1 {
@@ -122,6 +128,7 @@ h1 {
     margin: 0;
     background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -132,7 +139,7 @@ h1 {
 }
 
 .form-group {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
 }
 
 label {
@@ -152,9 +159,14 @@ input, textarea {
     border-radius: 12px;
     padding: 0.85rem 1rem;
     color: var(--text-main);
-    font-family: 'Outfit', monospace;
+    font-family: inherit;
     font-size: 0.9rem;
     backdrop-filter: blur(5px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#userIds, #botToken {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
 input:focus, textarea:focus {
@@ -164,38 +176,43 @@ input:focus, textarea:focus {
     box-shadow: 0 0 0 3px rgba(34, 158, 217, 0.15);
 }
 
+input.success, textarea.success {
+    border-color: var(--success);
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.1);
+}
+
+input.error, textarea.error {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.1);
+}
+
 textarea {
     resize: none;
 }
 
-#userIds {
-    height: 80px;
-}
-
-#message {
-    height: auto;
-    flex: 1;
-    min-height: 100px;
+#userIds, #message {
+    min-height: 200px;
 }
 
 .actions {
-    margin-top: 1rem;
-    display: flex;
-    gap: 0.5rem;
+    margin-top: 0.5rem;
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 1.25rem;
 }
 
 button {
     border: none;
-    border-radius: 10px;
-    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    flex: 1;
+    gap: 0.75rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-primary {
@@ -219,13 +236,15 @@ button {
     background: rgba(255, 255, 255, 0.05);
     color: var(--text-muted);
     flex: 0 0 auto;
-    width: 48px;
-    padding: 0;
+    width: auto;
+    padding: 1rem 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Status Log */
@@ -238,7 +257,8 @@ button {
     display: flex;
     flex-direction: column;
     min-height: 200px;
-    height: 100%; /* Ensure it fills the parent */
+    max-height: 400px; /* Limit height */
+    flex-grow: 0; /* Don't force grow */
 }
 
 .status-header {
@@ -343,6 +363,14 @@ button {
     flex: 1;
 }
 
+.log-time {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+    margin-top: 0.1rem;
+    min-width: 65px;
+}
+
 .icon { width: 18px; height: 18px; fill: currentColor; }
 
 .spinner {
@@ -358,14 +386,14 @@ button {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .glass-card {
+    .main-inputs {
         grid-template-columns: 1fr;
         gap: 1.5rem;
+    }
+    .glass-card {
         padding: 1.5rem;
         max-height: none; /* remove fixed height on mobile */
         height: auto;
-        display: flex;
-        flex-direction: column;
     }
     body {
         overflow: auto;

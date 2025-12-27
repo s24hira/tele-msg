@@ -30,21 +30,36 @@ document.getElementById('userIds').addEventListener('blur', function() {
         try {
             const parsed = JSON.parse(val);
             this.value = JSON.stringify(parsed, null, 2);
-            this.style.borderColor = 'var(--success)';
-            localStorage.setItem('userIds', this.value); // Save formatted version
+            this.classList.remove('error');
+            this.classList.add('success');
+            localStorage.setItem('userIds', this.value);
         } catch (e) {
-            this.style.borderColor = 'var(--error)';
+            this.classList.remove('success');
+            this.classList.add('error');
         }
     } else {
-        this.style.borderColor = 'var(--border)';
+        this.classList.remove('success', 'error');
     }
 });
 
 function clearLogs() {
     const body = document.getElementById('statusBody');
     const summary = document.getElementById('statusSummary');
-    body.innerHTML = '<div style="color: var(--text-muted); text-align: center; margin-top: 2rem; font-style: italic;">Logs cleared</div>';
+    body.innerHTML = '';
     summary.textContent = 'Ready';
+    document.getElementById('statusPanel').style.display = 'none';
+}
+
+function resetFields() {
+    if (confirm('Are you sure you want to clear all fields? This will also remove saved data.')) {
+        ['botToken', 'userIds', 'message'].forEach(id => {
+            const el = document.getElementById(id);
+            el.value = '';
+            el.classList.remove('success', 'error');
+            localStorage.removeItem(id);
+        });
+        clearLogs();
+    }
 }
 
 function copyLogs() {
@@ -100,6 +115,7 @@ async function sendMessage() {
     
     statusBody.innerHTML = ''; // Clear previous logs
     statusSummary.textContent = 'Processing...';
+    document.getElementById('statusPanel').style.display = 'flex';
 
     let successCount = 0;
     let failCount = 0;
@@ -141,9 +157,15 @@ async function sendMessage() {
                     const res = JSON.parse(line);
                     hasNewLogs = true;
                     
+                    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                    
                     const div = document.createElement('div');
                     div.className = `log-entry ${res.status === 'success' ? 'success' : 'error'}`;
                     
+                    const timeSpan = document.createElement('span');
+                    timeSpan.className = 'log-time';
+                    timeSpan.textContent = time;
+
                     const badge = document.createElement('span');
                     badge.className = `badge ${res.status === 'success' ? 'success' : 'error'}`;
                     badge.textContent = res.status === 'success' ? 'SENT' : 'FAIL';
@@ -153,6 +175,7 @@ async function sendMessage() {
                     text.textContent = `User ${res.user_id}`;
                     if (res.error) text.textContent += ` — ${res.error}`;
 
+                    div.appendChild(timeSpan);
                     div.appendChild(badge);
                     div.appendChild(text);
                     fragment.appendChild(div);
