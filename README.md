@@ -6,6 +6,8 @@
 
 **TeleMsg Pro** is a high-end, futuristic command center designed for professional Telegram broadcasting. It transforms the simple task of sending notifications into a sophisticated mission-control experience, featuring real-time telemetry, a terminal-style monitor, and advanced glassmorphism aesthetics.
 
+![Dashboard Preview](./assets/banner.png)
+
 ## 🚀 Key Features
 
 - **Mission Dashboard**: Bento-grid layout with real-time stat widgets for Queue Capacity, Successful Hits, and Delivery Errors.
